@@ -1,0 +1,104 @@
+create proc user_login 
+@username varchar(MAX),
+@password varchar(MAX)
+AS
+select count(*) from tourist where user_name=@username and password=@password
+--call fuction
+execute user_login @username = 'Heeba' ,@password = 'Heba'
+
+
+create proc admin_login
+@username varchar(MAX),
+@password varchar(MAX)
+AS
+select count (*) from admin where username=@username AND password=@password ;
+
+
+--display tourplaces
+create proc display_tourplaces
+@characterSearch varchar(MAX) = '%'
+AS
+select * from tourplace 
+where name like @characterSearch
+
+--diplay transportation
+create proc display_transportatipon 
+@characterSearch varchar(MAX) = '%'
+AS
+select * from transportation 
+where type like @characterSearch
+
+--search tourPlace
+create proc search_tourplaces
+@nameTourplace varchar(MAX)
+AS
+select  price,name,location 
+from tourplace 
+where name=@nameTourplace 
+
+
+create proc disp_History 
+@username varchar(MAX)
+AS 
+select *
+from tourist t INNER JOIN tourplace_tourist tpt
+ON t.user_ID = tpt.tourist_id INNER JOIN tourplace tp
+ON tp.place_id = tpt.tourplace_id INNER JOIN transportation_tourist trt
+ON trt.tourist_id = t.user_ID INNER JOIN transportation tr
+ON tr.trans_ID = trt.transportation_id where t.user_name = @username and trt.reservation_date < GETDATE()
+
+CREATE proc edit_for_admin
+(@transportationType varchar(MAX) ,@transportationPrice int, @transportationDepTime date, @transportationArrTime date
+ , @transportationFromPlace varchar(MAX) , @transportationToPlace varchar(MAX), @placePrice int , @placeName varchar(MAX)
+ ,@placeLocation varchar(MAX) )
+as 
+update transportation
+set type=transportation.type,
+	price =transportation.price,
+	dep_time=transportation.dep_time,
+	arr_time=transportation.arr_time
+
+
+ update tourplace
+ set price = tourplace.price,
+ name=tourplace.name,
+ location=tourplace.location
+
+
+
+
+create proc cancel_booking
+@date date ,
+@tourPlace_id int ,
+@transport_id int , 
+@tourist_id int
+as
+DELETE from transportation_tourist
+where reservation_date = @date and transportation_id=@transport_id and tourist_id = @tourist_id
+Delete from tourplace_tourist
+where reservation_date = @date and tourplace_id = @tourPlace_id and tourist_id = @tourist_id
+
+
+
+create proc edit
+(@touristName varchar(MAX) , @touristPassword varchar(MAX) , @touristPayment varchar(MAX) ,
+ @touristPhone varchar(MAX) , @touristUsername varchar(MAX) )
+as
+update tourist
+set name=@touristName,
+    password=@touristPassword,
+	payment=@touristPayment,
+	phone=@touristPhone,
+	user_name=@touristUsername
+	
+CREATE proc proc_Reservation
+(@userID int,@Date_res date,@tplaceID int,@trasnID int)
+as
+UPDATE tourplace_tourist
+set tourist_id = @userID,
+ reservation_date = @Date_res,
+ tourplace_id = @tplaceID
+UPDATE transportation_tourist
+set tourist_id = @userID,
+ transportation_id = @tplaceID,
+reservation_date = @Date_res
